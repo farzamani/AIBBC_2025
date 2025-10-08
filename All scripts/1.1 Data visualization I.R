@@ -21,7 +21,7 @@ print("Hello World")
 
 # Can you see the output in the Console below? Good! Let's try
 # some more commands. Just run each line and see what happens.
-print("Welcome to Bioinformatics and Genomics!")
+print("Welcome to AIBBC 2025, Bioinformatics and Genomics Workshop!")
 
 d = data.frame(x = 1:5, y = 11:15)
 plot(d)
