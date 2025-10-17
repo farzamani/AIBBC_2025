@@ -16,19 +16,20 @@ d = read_delim("Data/RNA_seq_counts.gtf", delim ="\t", col_names = T)
 
 #Check it out 
 glimpse(d)
+dim(d)
 
 #A) 
 # What is in rows? What is in columns? 
 
 
 #Reformat to long format and count the number of samples that had any expression of each gene
-Summary_d <-
-  d%>%
-  pivot_longer(cols = -gene_id) %>%
-  group_by(gene_id) %>%
-  mutate(n_above_0 = sum(value > 0)) %>%
-  distinct(gene_id, n_above_0) %>%
-  ungroup()
+Summary_d <- d %>%
+  pivot_longer(cols = -gene_id) %>%           # Convert wide to long format, keeping gene_id
+  group_by(gene_id) %>%                       # Group by each gene
+  mutate(n_above_0 = sum(value > 0)) %>%      # Count samples with expression > 0
+  distinct(gene_id, n_above_0) %>%            # Keep only unique gene_id and count
+  ungroup()                                   # Remove grouping
+
 
 # Comment on each line above what it does,either in writing here or discussing it with someone
 
@@ -44,7 +45,7 @@ d = filter(d, gene_id %in% genes_to_include)
 
 # C) 
 # How many genes are we looking at now?
-
+dim(d)
 
 #To save space on the RAM, we will subset down to a random set of 200 genes
 set.seed(139)

@@ -78,4 +78,32 @@ head(res)
 # A) 
 # Do we find the same top-hit gene as when we ran the models ourselves in 3_1_1?
 
+res %>%
+  arrange(pvalue, decreasing = T) %>% 
+  head()
 
+# Bonus Exercise
+ggplot(res, aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(alpha = 0.6) +
+  xlab("log2 Fold Change") +
+  ylab("-log10(p-value)") +
+  theme_minimal() +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "grey") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "grey")
+
+res$significant = with(res, ifelse(pvalue < 0.05 & abs(log2FoldChange) > 1, "yes", "no"))
+
+ggplot(res, aes(x = log2FoldChange, y = -log10(pvalue), color = significant)) +
+  geom_point(alpha = 0.6) +
+  scale_color_manual(values = c("grey", "red")) +
+  theme_minimal()
+
+volcano_df = res
+volcano_df$log2FoldChange[is.na(volcano_df$log2FoldChange)] <- 0
+volcano_df$padj[is.na(volcano_df$padj)] <- 1
+
+ggplot(volcano_df, aes(x = log2FoldChange, y = -log10(padj))) +
+  geom_point(alpha = 0.5) +
+  geom_vline(xintercept = c(-1,1), linetype = "dashed", color = "red") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "blue") +
+  labs(x = "Log2 Fold Change", y = "-log10 FDR-adjusted p-value")

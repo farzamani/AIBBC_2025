@@ -11,8 +11,8 @@ library(broom)
 library(Rtsne)
 
 # Read the glaucoma data set
-# d <- read_rds("Data/chd_500.rds")
-d <- read_rds("Data/chd_full.rds")
+d <- read_rds("Data/chd_500.rds")
+#d <- read_rds("Data/chd_full.rds")
 
 glimpse(d)
 d = d %>% filter(complete.cases(.))
@@ -34,7 +34,8 @@ glimpse(d_w_pca)
 # 2) Give the points different colors depending on whether the individual has congenital heart disorder (chdfate == T ) 
 
 ggplot(data=d_w_pca, aes(x=.fittedPC1, y=.fittedPC2)) +
-  geom_point(aes(colour = chdfate))
+  geom_point(aes(colour = chdfate)) +
+  ggtitle("PCA")
 
 # B)
 # We can create a dataframe with the proportion of variance explained for each PC like this:
@@ -90,7 +91,9 @@ tsne_plot <- bind_cols(
 
 # H) Make a plot of the output 
 ggplot(tsne_plot) +
-  geom_point(aes(x=x, y=y, color = month))
+  geom_point(aes(x=x, y=y, color = chdfate)) + 
+  ggtitle("tSNE")
+
 
 # I) Try to use different parameters in Rtsne to improve the t-sne separation. You can also
 # try to run Rtsne on the PCA data (Hint: Use pca$x as data input for Rtsne, and set PCA = T)
@@ -105,6 +108,7 @@ tsne_plot <- bind_cols(
   y = tsne_out$Y[,2])
 
 ggplot(tsne_plot) +
-  geom_point(aes(x=x, y=y, color = month))
+  geom_point(aes(x=x, y=y, color = chdfate)) +
+  ggtitle("tSNE")
 
 
