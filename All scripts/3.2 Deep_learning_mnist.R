@@ -83,7 +83,7 @@ summary(model)
 # optimizer to reduce the loss, and accuracy as the performance metric
 
 model %>% compile(
-  loss = 'categorical_crossentropy',
+  loss = 'sparse_categorical_crossentropy',
   optimizer = optimizer_adam(),
   metrics = c('accuracy')
 )

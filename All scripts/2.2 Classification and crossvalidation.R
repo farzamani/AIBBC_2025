@@ -3,7 +3,7 @@
 # Supervised learning II
 # Classification and cross-validation
 # Simon Grund Sorensen, Jakob Skou Pedersen, Soren Besenbacher
-#######
+########
 
 ## Load libraries ####
 library(tidyverse)       # for tidyverse
@@ -12,7 +12,7 @@ library(skimr)           # for variable summaries
 tidymodels_prefer() #Set tidymodels as the default whenever multiple packages have functions with the same name
 
 # load data
-chd_full = read_rds("Data/chd_full.rds")
+chd_full <- read_rds("Data/chd_full.rds")
 skim(?)
 
 #### PART 1 ####
@@ -44,6 +44,7 @@ chd_rec <-
   step_center(all_numeric_predictors()) %>% #Normalize numeric data to mean of zero
   step_scale(all_numeric_predictors()) #Normalize numeric data to have a standard deviation of one
 
+
 # B)
 # Have a look at the recipe by running below line:
 # Are there any of the operations that you don't understand?``
@@ -54,23 +55,23 @@ chd_rec
 preprocessed_rec <- prep(chd_rec, training = chd_train) 
 preprocessed_rec
 
-#Use the recipe to format (bake) the training data
+# Use the recipe to format (bake) the training data
 chd_train_baked <- bake(preprocessed_rec, new_data = chd_train)
 glimpse(chd_train_baked)
 
-#Now, we can use the same recipe to bake the test data to ensure 
+# Now, we can use the same recipe to bake the test data to ensure 
 # that it has undergone the same normalization and formatting as the testing data
 chd_test_baked <- bake(preprocessed_rec, new_data = chd_test)
 glimpse(chd_test_baked)
 
 
 ##### PART 2: time to start our modeling career! ####
-## define a model type (logistic regression) and engine (glm) #### 
+## Define a model type (logistic regression) and engine (glm) #### 
 lr_mod <- 
   logistic_reg() %>% 
   set_engine("glm")
 
-# combine the recipe and the model into a workflow:
+# Combine the recipe and the model into a workflow:
 # By adding the un-processed recipe, we preprocess it again here, as in PART 2.
 # This is not strictly necessary (we could have used the baked training data as input)
 # but it is more consistent to keep all steps of the modeling in a single workflow as 
@@ -81,8 +82,8 @@ chd_wflow <-
   add_recipe(chd_rec) 
 chd_wflow
 
-## fit model using workflow
-#Notice we use the un-baked data. The fit will preprocess the recipe and bake the data automatically
+## Fit model using workflow
+# Notice we use the un-baked data. The fit will preprocess the recipe and bake the data automatically
 chd_fit <- 
   chd_wflow %>% 
   fit(data = chd_train) 
@@ -93,32 +94,39 @@ chd_fit %>%
   extract_fit_parsnip() %>% 
   tidy()
 
+
 # A)
 # What are the three most significant variables? 
+
 
 # B)
 # Extract the predicted probabilities on the training data from the fitted model.
 Fitted_values_train = augment(chd_fit, chd_train)
 
+
 # C)
 # Make a quick histogram of the class probabilities (probabilities of the chdfate event)
 ggplot(data = Fitted_values_train) + geom_histogram(aes(x=?))
 
+
 # D)
-# predict on the test data using the fitted workflow. 
+# Predict on the test data using the fitted workflow. 
 # Notice that the predict function will return TRUE/FALSE per default, rather 
 # than the class probabilities (fitted values as above).
 # If you want these, you can add type = "prob" to the line belw
 predict(chd_fit, new_data = ?)
 
+
 # E)
-# augment predictions to data set using the fitted workflow ####
+# Augment predictions to data set using the fitted workflow ####
 chd_aug <- 
   augment(chd_fit, chd_test)
 glimpse(chd_aug)
 
+
 # (F)
 # If you have the time, make a ggplot with geom_boxplot that shows the class probabilities on the test data.
+
 
 # (G)
 # Is our model able to separate chdfate == T from chdfate == F?
@@ -138,20 +146,22 @@ chd_aug %>%
 # A)
 # What would the AUC score be, if the model had no ability to separate chdfate == T / F ?
 
+
 # B) 
 # Do you think the AUC score we get is good?
+
 
 # C)
 # Do you have any thoughts on how it could be improved? 
 
 
 #### PART 4 ####
-## cross-validation folds (data subsets) ####
+## Cross-validation folds (data subsets) ####
 set.seed(345)
 folds <- vfold_cv(chd_train, v = 10)
 folds
 
-## fit our model with cross-validation (resampling) ####
+## Fit our model with cross-validation (resampling) ####
 set.seed(456)
 chd_fit_rs <- 
   chd_wflow %>% 
@@ -168,8 +178,10 @@ chd_aug %>%
 chd_aug %>% 
   accuracy(truth = chdfate, .pred_class)
 
+
 # A)
 # Does the cross-validation and test-data approach give similar AUC and accuracy?
+
 
 # B)
 # What would it mean if it didn't?

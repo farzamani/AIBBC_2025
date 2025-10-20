@@ -33,6 +33,7 @@ Remember to refer to the **Quarto** cheat sheet and the [**Quarto guide**](https
 9. Try adding the chd_500 data set and make a plot based on it.
     - Use *read_rds("chd_500.rds")* to load it from file.
 
+
 ## Quarto exercises part II
 
 1. Make a simple table by hand

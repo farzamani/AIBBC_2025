@@ -1,21 +1,22 @@
 #####
-# 
+#
 # R-programming and Visualising Data in R I
 #
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
-# 
-####
+#
+#####
 
-#PART 1 — R programming and data visualization#
+# PART 1 — R programming and data visualization#
 #### Introduction to R-programming
 # Any line starting with a hash-tag is just text! This way,
 # you can leave notes for yourself. Try to make a new line below
 # and write a hashtag (#) followed by a message for yourself.
 
 
+
 # Now, let's try to run some code! To run code, move your
 # cursor to the line you want to run and press CTRL+Enter (Windows)
-# CMD + Enter (Mac). Try it on the line below:
+# or CMD + Enter (Mac). Try it on the line below:
 
 print("Hello World")
 
@@ -23,7 +24,7 @@ print("Hello World")
 # some more commands. Just run each line and see what happens.
 print("Welcome to AIBBC 2025, Bioinformatics and Genomics Workshop!")
 
-d = data.frame(x = 1:5, y = 11:15)
+d <- data.frame(x = 1:5, y = 11:15)
 plot(d)
 
 summary(d$x)
@@ -39,9 +40,9 @@ library(tidyverse)
 
 # Let's load the mpd data that is built into R. Later
 # you will learn to load your own data, but for now
-# we are just practicing. Run this line to define the 
+# we are just practicing. Run this line to define the
 # built in 'mpg' data set as a variable called 'd'.
-d = mpg
+d <- mpg
 
 # Try to click the 'd' data set in environment (upper right corner) and look at the
 # data window that pop's up. Just spend a moment to see, that the
@@ -52,14 +53,14 @@ d = mpg
 ggplot(data = mpg)
 
 # Initiate an empty plot with the mpg data but now
-# we add a histogram (geom_histogram) 
-# of 'highway miles per gallon' (hwy) 
-ggplot(data = mpg) + 
+# we add a histogram (geom_histogram)
+# of 'highway miles per gallon' (hwy)
+ggplot(data = mpg) +
   geom_histogram(aes(x = hwy))
 
 # Let's try a dot-plot where we compare hwy with displ (engine displacement, in litres)
 # Replace the '?' to plot 'hwy' on the y-axis
-ggplot(data = mpg) + 
+ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = ?))
 
 # Replace the ?'s to make point size reflect the number of cylinders (cyl)
@@ -74,7 +75,7 @@ ggplot(data = mpg) +
 aes(x = displ, y = hwy)
 
 # Replace the ? to make a dotted line in the below (Hint: use ?linetype to see help, or google it (or ask us))
-ggplot(data = mpg) + 
+ggplot(data = mpg) +
   geom_smooth(mapping = aes(x = displ, y = hwy), linetype = ?)
 
 # Change the geom below to make a histogram (geom_histogram)

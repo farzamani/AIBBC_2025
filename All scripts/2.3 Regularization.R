@@ -5,7 +5,7 @@
 #
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
 # 
-#######
+########
 
 ## Load libraries ####
 library(tidyverse)       # for tidyverse
@@ -16,8 +16,8 @@ library(vip)             # vizualise parameter importance
 tidymodels_prefer() #Set tidymodels as the default whenever multiple packages have functions with the same name
 
 #### PART 0: Load data and make recipe, as in 1_5_1
-# load data
-chd_full = read_rds("Data/chd_full.rds")
+# Load data
+chd_full <- read_rds("Data/chd_full.rds")
 skim(chd_full)
 
 #### PART 1 ####
@@ -41,7 +41,7 @@ set.seed(345)
 folds <- vfold_cv(chd_train, v = 10)
 folds
 
-# initiate recipe
+# Initiate recipe
 chd_rec <- 
   recipe(chdfate ~ ., data = chd_train)  %>% #Define the formula and the data
   update_role(id, new_role = "ID") %>% #MMake it clear that "id" variable is not a predictor
@@ -54,7 +54,7 @@ chd_rec <-
 chd_rec
 
 #### PART 1: Regularisation
-# tune penalty in lasso regression (mixture = 1)
+# Tune penalty in lasso regression (mixture = 1)
 lr_reg_mod <- 
   logistic_reg(penalty = tune(), mixture = 1) %>% 
   set_engine("glmnet")
@@ -65,12 +65,12 @@ chd_wflow <-
   add_model(lr_reg_mod) %>%
   add_recipe(chd_rec)
 
-# make grid of penalty values for the model optimization to go through
+# Make grid of penalty values for the model optimization to go through
 lr_reg_grid <- grid_regular(penalty(), levels = 50)
 print(lr_reg_grid, n = 50)
 plot(lr_reg_grid$penalty)
 
-# fit across tuning grid of penalty values
+# Fit across tuning grid of penalty values
 # Note that the tuning uses the cross-validation folds to avoid overfitting.
 
 lr_reg_res <- 
@@ -81,13 +81,15 @@ lr_reg_res <-
 lr_reg_res
 
 # A)
-?collect_metrics()
 # Use "collect_metrics()" to better understand the performance of the model
+?collect_metrics()
+
 lr_reg_res %>% 
   collect_metrics()
 
+
 # B)
-# plot roc auc results 
+# Plot ROC AUC results
 # Try to read the plot-cde line by line and see if you have a basic understanding of
 # what each line does
 lr_plot <- 
@@ -101,6 +103,7 @@ lr_plot <-
   scale_x_log10(labels = scales::label_number())
 lr_plot 
 
+
 # C)
 # What does the plot show us? (Hint, what happens when we increase the penalty)
 
@@ -113,7 +116,7 @@ top_models <-
   arrange(penalty) 
 top_models
 
-# Or just the very  best model
+# Or just the very best model
 # optimal tuning parameter
 lr_reg_best <- lr_reg_res %>%
   select_best("roc_auc") #Finds the best tuning parameters to optimize model performance. 
@@ -133,17 +136,19 @@ final_fit <-
   final_chd_wflow %>%
   last_fit(chd_split)
 
+
 # E)
-# collect_metric() the final fit, to evaluate performance
+# collect_metrics() the final fit, to evaluate performance
 final_fit %>%
   ?()
 
 # F
-# plot roc usng autoplot
+# Plot ROC using autoplot()
 final_fit %>%
   collect_predictions() %>% 
   roc_curve(chdfate, .pred_TRUE) %>% 
   ?()
+
 
 # G)
 # view parameter values and vizualise importance
@@ -156,7 +161,8 @@ final_fit %>%
   vip(lambda = as.numeric(lr_reg_best[1,1]))
 
 # What do you think of these feature importances? Is it meaningful or would you
-#exclude any of the variables and re-run? 
+# exclude any of the variables and re-run?
 
-#If time allows, try setting the mixture variable in the regressiom to different values between 0 and 1 and see what happens.
-#Hint: Mixture = 0 is called Ridge regression, anything between 0 and 1 is called elastic net.s
+# If time allows, try setting the mixture variable in the regressiom to different values 
+# between 0 and 1 and see what happens.
+# Hint: Mixture = 0 is called Ridge regression, anything between 0 and 1 is called elastic net.
