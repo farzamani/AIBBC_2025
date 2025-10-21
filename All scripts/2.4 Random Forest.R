@@ -5,7 +5,7 @@
 # 
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
 # 
-#######
+########
 
 ## Load libraries ####
 library(tidyverse)       # for tidyverse
@@ -16,16 +16,16 @@ tidymodels_prefer() #Set tidymodels as the default whenever multiple packages ha
 
 #### PART 0: Load data #####
 # load data
-chd_full = read_rds("Data/chd_full.rds")
+chd_full <- read_rds("Data/chd_full.rds")
 
 ##### PART 1:  Pre-process the data ####
 # We wish to train a random forest (RF) model for classification, make predictions 
 # on test set, and evaluate performance.
 
 # The Random Forrest setup in the ranger package does not use recipes as we are used to,
-# so we have to pre-process the data a bit ourselves. 
+# so we have to pre-process the data a bit ourselves.
 # Luckily, we only need to remove incomplete rows
-chd_full = chd_full[complete.cases(chd_full),]
+chd_full <- chd_full[complete.cases(chd_full),]
 
 #Split into training and test data 
 set.seed(222)
@@ -52,7 +52,7 @@ rf_fit
 # nature of the forest. Let's make some performance evaluation to help us.
 
 #### ## PART 3: Performance evaluation ####
-# add predictions to chd_test
+# Add predictions to chd_test
 chd_test_w_pred_rf <- augment(rf_fit, new_data = chd_test)
 
 # Plot a ROC curve
@@ -69,6 +69,5 @@ classification_metrics(chd_test_w_pred_rf, truth = chdfate, estimate = .pred_cla
 # A)
 # The AUC using cross-validated logistic regression was 0.796
 # iv. How did the performance change from logistic regression to random forest?
-# v.  Why may it be relevant to evaluate different modeling procedures in 
+# v.  Why may it be relevant to evaluate different modeling procedures in
 #     different situations?
-
