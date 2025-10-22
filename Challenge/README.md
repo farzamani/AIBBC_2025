@@ -42,3 +42,9 @@ Data are split into:
 ## Getting started
 
 Go to `Prediction Challenge.Rmd` and start immediately!
+
+---
+
+## Submission
+
+Google Drive to load your submission will be informed during workshop.
