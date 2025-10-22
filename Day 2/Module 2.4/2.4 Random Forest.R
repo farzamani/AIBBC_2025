@@ -1,0 +1,1 @@
+/home/farzamani/AIBBC_2025/All scripts/2.4 Random Forest.R
