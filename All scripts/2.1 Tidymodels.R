@@ -1,8 +1,10 @@
 ########
 # 
-# Supervised learning and tidymodels (linear regression)
+# Supervised learning I
+# Linear regression and tidymodels
 # 
-# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
 # 
 ########
 

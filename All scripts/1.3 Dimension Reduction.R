@@ -1,7 +1,9 @@
 #####
-#  Dimension reduction in R
 #
-# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
+# Dimension reduction in R
+#
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
 # 
 #####
 

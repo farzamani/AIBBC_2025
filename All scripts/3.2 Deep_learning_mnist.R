@@ -1,4 +1,11 @@
+########
+# 
 # Assignment: Building a Neural Network - MNIST Classifier with R Keras
+#
+# Mathilde Diekema, Farhad Zamani
+# Aarhus University
+# 
+#######
 
 ## Part 1: Setup
 ### Exercise 1: Install Required Library

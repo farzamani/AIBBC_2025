@@ -2,7 +2,8 @@
 # 
 # Analysis of bulk RNA seq data 
 #
-# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
 # 
 #######
 

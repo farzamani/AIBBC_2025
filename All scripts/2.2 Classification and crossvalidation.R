@@ -2,8 +2,11 @@
 # 
 # Supervised learning II
 # Classification and cross-validation
-# Simon Grund Sorensen, Jakob Skou Pedersen, Soren Besenbacher
-########
+#
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
+#
+#######
 
 ## Load libraries ####
 library(tidyverse)       # for tidyverse

@@ -2,7 +2,8 @@
 # 
 # Loading Data in R
 #
-# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
 # 
 #####
 

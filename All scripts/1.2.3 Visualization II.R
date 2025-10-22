@@ -2,7 +2,8 @@
 # 
 # Visualising Data in R II
 #
-# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
 # 
 #####
 

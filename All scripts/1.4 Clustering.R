@@ -1,7 +1,9 @@
 #####
 # 
+# Clustering in R
 # 
-# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
+# Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
+# Aarhus University
 # 
 #####
 
@@ -10,7 +12,7 @@ library(tidyverse)
 library(ggdendro)
 
 #Load the data including PCs from the last module
-d = read_delim("Data/d_w_pca.tsv")
+d <- read_delim("Data/d_w_pca.tsv")
 glimpse(?)
 
 # PART 1: K-Means Clustering
