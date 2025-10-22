@@ -11,17 +11,17 @@ library(tidyverse)
 library(tidymodels)
 
 ##### PART 1: Load data and do some visualisations ####
-#Load counts
-d = read_delim("Data/RNA_seq_counts.gtf", delim ="\t", col_names = T)
+# Load counts
+d <- read_delim("Data/RNA_seq_counts.gtf", delim ="\t", col_names = T)
 
-#Check it out 
+# Check it out 
 glimpse(d)
 
-#A) 
+# A) 
 # What is in rows? What is in columns? 
 
 
-#Reformat to long format and count the number of samples that had any expression of each gene
+# Reformat to long format and count the number of samples that had any expression of each gene
 Summary_d <-
   d%>%
   pivot_longer(cols = -gene_id) %>%
@@ -32,21 +32,23 @@ Summary_d <-
 
 # Comment on each line above what it does,either in writing here or discussing it with someone
 
-#Visualize
+# Visualize
 hist(Summary_d$n_above_0)
+
 
 # B) 
 # How many genes have 0 expression across all samples?
 
-#Let's only look at  genes that have an expression in at least 25% of the samples:
+# Let's only look at  genes that have an expression in at least 25% of the samples:
 genes_to_include = filter(Summary_d, n_above_0 > 0.25*ncol(d))$gene_id
 d = filter(d, gene_id %in% genes_to_include)
+
 
 # C) 
 # How many genes are we looking at now?
 
 
-#To save space on the RAM, we will subset down to a random set of 200 genes
+# To save space on the RAM, we will subset down to a random set of 200 genes
 set.seed(139)
 d = slice_sample(d, n = 200)
 
@@ -73,7 +75,7 @@ d$sample_summed_counts_in_million = NULL #We remove this column simply to clean 
 # Let's quickly look at the log-transofed counts-per-million
 hist(d$logCPM)
 
-#D)
+# D)
 # Why is their a peak around 2 which seems to stand out from the rest?
 
 # Let's add annotation of whether each sample came from a patient with tremor or not
@@ -83,20 +85,20 @@ glimpse(meta)
 
 d = left_join(d, meta, by = c("name" = "ID"))
 
-# make a boxplot of the logCPM for the two different diagnosis groups
+# Make a boxplot of the logCPM for the two different diagnosis groups
 ggplot(d, aes(x = diagnosis, y = logCPM)) + geom_boxplot()
 
-#E) What does this graph tell us?
+# E) What does this graph tell us?
 
 # Let's plot just two samples
 s1 = filter(d, name == "SRR9835803")
 s2 = filter(d, name == "SRR9835947")
 plot(s1$logCPM, s2$logCPM)
 
-#F) 
+# F) 
 # What does this graph tell us?
 
-#(G) 
+# G) 
 # Can you make a nicer version of this graph in ggplot? 
 # Make sure that axis labels are the sample names and consider adding a 
 # line using geom_smooth(method = "lm")
@@ -107,7 +109,7 @@ write.table(d, "Data/RNA_seq_filtered_and_formatted.tsv", sep ="\t", col.names =
 ### PART 2 ####
 
 # Load the data (if you didnt go directly from PART 1)
-d = read_delim("Data/RNA_seq_filtered_and_formatted.tsv")
+d <- read_delim("Data/RNA_seq_filtered_and_formatted.tsv")
 
 # Fix the encoding of diagnosis and gender
 d$diagnosis = as.factor(d$diagnosis) #It's not strictly necessary, but good to ensure that R sees categorical values as factors
@@ -117,7 +119,7 @@ d$gender = as.factor(d$gender)
 # differentially expressed genes between essential tremor samples and controls
 
 # First, we compare tremor and control for a single gene
-tmp = filter(d, gene_id == "ENSG00000158887.15")
+tmp <- filter(d, gene_id == "ENSG00000158887.15")
 
 # Let's see if we can visually see a difference
 ggplot(tmp, aes(x = diagnosis, y = logCPM))+
@@ -127,7 +129,7 @@ ggplot(tmp, aes(x = diagnosis, y = logCPM))+
 #Do you think the two boxplots are significantly shifted?
 
 # Let's test it using a t-test
-t_fit = t.test(filter(tmp, diagnosis == "Control")$logCPM, 
+t_fit <- t.test(filter(tmp, diagnosis == "Control")$logCPM, 
                filter(tmp, diagnosis != "Control")$logCPM )
 t_fit$p.value
 
@@ -140,11 +142,13 @@ lm_form_fit <-
   set_engine("lm")%>% 
   fit(logCPM ~ diagnosis, data = tmp)
 
-fit1 = tidy(lm_form_fit)
+fit1 <- tidy(lm_form_fit)
 fit1
+
 
 # B)
 # Do we get the same result from the linear model as from the t-test?
+
 
 # C)
 #Let's add age and gender to the model formula
@@ -156,6 +160,7 @@ lm_form_fit <-
 
 fit2 = tidy(lm_form_fit)
 fit2
+
 
 # D) How would you interpret fit2, and why has the p-value of diagnosis changed?
 
@@ -175,13 +180,13 @@ for(g in genes){
   tmp_lm = lm_form_fit %>%
     fit(logCPM ~ diagnosis, data = tmp)
   
-  #Extract coefficients (could also be done using the tidy() function)
+  # Extract coefficients (could also be done using the tidy() function)
   tmp_summary = summary(tmp_lm$fit)
   coef = tmp_summary$coefficients[2]
   std_error = tmp_summary$coefficients[4]
   p_value = tmp_summary$coefficients[8]
   
-  #Store in data frame
+  # Store in data frame
   tmp_out = data.frame(
     Gene = g,
     Coefficient = coef,
@@ -202,17 +207,21 @@ head(fit1_all_genes)
 # Which gene is the most significant when comparing disease to control? 
 # (HINT: Use slice_min with p_value being the variable to order by)
 
+
 # F)
 # Is this gene up- or down-regulated in the disease group? 
 
+
 # G)
 # What is the normal name of this gene? (hint: Google)
+
 
 # H)
 # What is the problem with the many tests we have made?
 
 # Let's account for multiple testing by calculating the false-discovery-rate (FDR)
 fit1_all_genes$q_value = p.adjust(fit1_all_genes$p_value, method = "fdr")
+
 
 # I) 
 # Do you think the top-hit is interesting? Why / why not?
@@ -225,13 +234,13 @@ for(g in genes){
   tmp = filter(d, gene_id == g)
   tmp_lm = lm_form_fit%>%fit(logCPM ~ age+gender+diagnosis, data = tmp)
   
-  #Extract coefficients
+  # Extract coefficients
   tmp_summary = summary(tmp_lm$fit)
   coef = tmp_summary$coefficients[4]
   std_error = tmp_summary$coefficients[8]
   p_value = tmp_summary$coefficients[16]
   
-  #Store in data frame
+  # Store in data frame
   tmp_out = data.frame(
     Gene = g,
     Coefficient = coef,
@@ -248,6 +257,5 @@ for(g in genes){
 fit2_all_genes = out
 head(fit2_all_genes)
 
+
 #J) Is the same gene still the most significant?
-
-

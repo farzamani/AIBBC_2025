@@ -4,7 +4,7 @@
 #
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Aarhus University
 #
-####
+#####
 
 #Loading necessary packages
 library(tidyverse)
@@ -26,6 +26,7 @@ d <- read_rds("Data/chd_full.rds")
 
 d %>%
   filter(? > 50)
+
 
 # B)
 # How many individuals over 50 (years) have a cholesterol (scl) level over 300?
@@ -53,12 +54,12 @@ d[100,] = NA
 
 d %>% mean(age)
 
+
 # F)
 # Fix above code so that it gives us a mean and ignores the NA
 # (you can check the help page for the mean function to find out how to make it 
 # ignore NA's (missing values). You can open the the help page by typing ?mean 
 # in the console the script window)
-
 
 
 # G)
@@ -77,9 +78,11 @@ d %>%
 # What is the smallest observed cholesterol (scl) level among individuals with a BMI over 40?
 # HINT: Use slice_min — use ?slice_min to get more help if you need.
 
+
 # J)
-# Among those individuals that have congential heart disorder  (chdfate==True). 
+# Among those individuals that have congential heart disorder (chdfate==True).
 # What is the median scl level for each gender?
+# HINT: Use ?filter, ?group_by and ?summarise functions!
 
 
 # K)
@@ -88,18 +91,21 @@ d %>%
 d = d %>%
   mutate(age_over_30 = ifelse(age > 30, ?, ?))
 
+
 # L)
-# Calculate the mean scl level for each combination of chdfate and age_over_30 
+# Calculate the mean scl level for each combination of chdfate and age_over_30
 
 
 # M)
 # How many patients are there for each combination of chdfate and age_over_30 ?
 
+
 # N)
 # Calculate the mean scl for each Age and chdfate
 
+
 # O)
-# Make a scatter plot with the mean_scl on x axis and Age on the y axis where 
+# Make a scatter plot with the mean_scl on x axis and Age on the y axis where
 # the color of the data points are determined based on the chdfate
 
 
@@ -111,4 +117,3 @@ d = d %>%
 # Q)
 # Remove all points that are base on less than 10 observations from the plot 
 # from the previous exercise
-
