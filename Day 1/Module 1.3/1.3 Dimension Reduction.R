@@ -1,1 +1,1 @@
-All scripts/1.3 Dimension Reduction.R
+../../All scripts/1.3 Dimension Reduction.R
