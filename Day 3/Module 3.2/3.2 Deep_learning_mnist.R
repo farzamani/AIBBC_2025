@@ -1,1 +1,1 @@
-/home/farzamani/AIBBC_2025/All scripts/3.2 Deep_learning_mnist.R
+All scripts/3.2 Deep_learning_mnist.R

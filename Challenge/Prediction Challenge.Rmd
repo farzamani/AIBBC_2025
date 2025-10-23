@@ -1,7 +1,3 @@
----
----
----
-
 # Prediction Challenge! of the AIBBC 2025 Bioinformatics and Genomics
 
 ## Load library and data
@@ -12,8 +8,8 @@ library(tidymodels)
 ```
 
 ```{r}
-df_train <- read_rds(file = "~/Documents/AIBBC_2025/Challenge/Data/tcga_train.rds") 
-df_test <- read_rds(file = "~/Documents/AIBBC_2025/Challenge/Data/tcga_test.rds") 
+df_train <- read_rds(file = "Data/tcga_train.rds") 
+df_test <- read_rds(file = "Data/tcga_test.rds") 
 ```
 
 ## Quick view of all data
