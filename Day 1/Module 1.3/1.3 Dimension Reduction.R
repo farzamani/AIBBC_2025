@@ -1,1 +1,1 @@
-/home/farzamani/AIBBC_2025/All scripts/1.3 Dimension Reduction.R
+All scripts/1.3 Dimension Reduction.R

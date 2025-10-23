@@ -1,1 +1,1 @@
-/home/farzamani/AIBBC_2025/All scripts/1.5 R-markdown.Rmd
+All scripts/1.5 R-markdown.Rmd

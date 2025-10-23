@@ -47,4 +47,6 @@ Go to `Prediction Challenge.Rmd` and start immediately!
 
 ## Submission
 
+Submission examples are provided in this folder: `challenge_response.team_aarhus.rds` and `challenge_tissue.team_aarhus.rds`
+
 Google Drive to load your submission will be informed during workshop.

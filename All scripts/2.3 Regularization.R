@@ -1,6 +1,6 @@
 ########
 # 
-# Supervised learning II
+# Supervised learning III
 # Regularization
 #
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
