@@ -11,7 +11,9 @@ packages_to_install = c(
 new_packages = packages_to_install[!(packages_to_install %in% installed.packages()[,"Package"])]
 
 if(length(new_packages) > 0){
-  install.packages(new_packages, ask = FALSE, Ncpus = 4L, repos = "https://cran.icts.res.in/")
+  for (pkg in new_packages) {
+    install.packages(pkg, ask = FALSE, Ncpus = 4L)
+  }
 }
 
 # Some packages need to be installed directly from github. Don't panic if this doesnt work at first,
