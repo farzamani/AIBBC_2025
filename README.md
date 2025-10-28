@@ -1,5 +1,9 @@
 # Welcome to the AIBBC 2025 Bioinformatics and Genomics Workshop
 
+## Link to the workshop homepage
+
+Visit https://sites.google.com/view/aibbc2025bioinformatics.
+
 ## Exercises
 There will be hands-on exercises throughout the workshop. Exercise scripts are named by the module and subject they relate to.
 You can download the exercises and data and run the exercises on your local machine by downloading this repository.
