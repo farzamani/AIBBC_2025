@@ -14,3 +14,8 @@ Additionally, all scripts are shared as described above.
 
 ### NOTE:
 To run the scripts on your own machine, you will need a set of packages. For most users, these can be installed swiftly by the code in "0_INSTALL_PACKAGES.R" in the Code folder.
+
+## Software Version
+
+In this project we use R 4.5.1.
+And some other packages.
