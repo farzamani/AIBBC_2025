@@ -11,14 +11,10 @@
 ### Exercise 1: Install Required Library
 # Install the necessary library: keras.
 # Uncomment the following line to install the package if not already installed.
-# install.packages("keras")
-
+# install.packages("keras3")
 
 # Load the libraries
-library(keras)
-
-# Uncomment the following line to install the package if not already installed.
-# install_keras()
+library(keras3)
 
 ## Part 2: Load and Prepare the Data
 ### Exercise 2: Load the MNIST Dataset
@@ -90,7 +86,7 @@ summary(model)
 # optimizer to reduce the loss, and accuracy as the performance metric
 
 model %>% compile(
-  loss = 'sparse_categorical_crossentropy',
+  loss = 'categorical_crossentropy',
   optimizer = optimizer_adam(),
   metrics = c('accuracy')
 )
@@ -125,7 +121,7 @@ y_subset <- y_test[indices,]
 # Make predictions
 predictions <- model %>%
   predict(x_subset) %>%
-  k_argmax()
+  op_argmax(axis=-1)
 
 predictions$numpy()
 
@@ -135,7 +131,7 @@ for (i in 1:10) {
   img <- array_reshape(x_subset[i,], c(28, 28))
   img <- t(img)[, nrow(img):1] # Transpose and flip the image to correct orientation
   true_label <- which.max(y_subset[i,]) - 1
-  pred_label <- predictions[i]
+  pred_label <- predictions[i] - 1
   image(1:28, 1:28, img, col=gray.colors(255), main=paste("True:", true_label, "Pred:", pred_label))
 }
 
@@ -145,4 +141,3 @@ for (i in 1:10) {
 # 2. Experiment with different optimizers (e.g., SGD, RMSprop) and compare the results.
 # 3. Change the number of epochs and batch size. How do these parameters affect the training time and accuracy?
 # 4. Visualize the training and validation accuracy/loss over epochs using a plot.
-
