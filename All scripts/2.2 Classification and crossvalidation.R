@@ -1,190 +1,375 @@
 ########
 # 
-# Supervised learning II
-# Classification and cross-validation
+# Supervised Learning II - Classification and Cross-Validation
 #
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
 # Aarhus University
 #
 #######
 
-## Load libraries ####
-library(tidyverse)       # for tidyverse
-library(tidymodels)      # for tidymodels
-library(skimr)           # for variable summaries
-tidymodels_prefer() #Set tidymodels as the default whenever multiple packages have functions with the same name
+################################################################################
+#### PART 1: Data Preparation ####
+################################################################################
 
-# load data
+################################################################################
+#### SECTION 1: Introduction to Classification ####
+################################################################################
+
+# CLASSIFICATION vs REGRESSION:
+# - Regression: Predict continuous values (e.g., BMI, blood pressure)
+# - Classification: Predict categories (e.g., disease yes/no, species type)
+#
+# Today's goal: Predict whether a patient develops heart disease (TRUE/FALSE)
+# We'll use LOGISTIC REGRESSION - designed for binary outcomes.
+
+# Load libraries
+library(tidyverse)   # Data manipulation and visualization
+library(tidymodels)  # Modeling framework
+library(skimr)       # Data summaries
+
+tidymodels_prefer()  # Resolve function name conflicts
+
+################################################################################
+#### SECTION 2: Load and Examine Data ####
+################################################################################
+
 chd_full <- read_rds("Data/chd_full.rds")
-skim(?)
 
-#### PART 1 ####
-# Now, let's preprocess our data for modelling
-# First we split the data to save some data for testing our model.
+# Examine the data:
+skim(chd_full)
 
-# Fix the random numbers by setting the seed, which ensures the analysis is reproducible when using random numbers. 
+################################################################################
+#### SECTION 3: Train-Test Split with Stratification ####
+################################################################################
+
+# For classification, we need to ensure balanced representation of both classes.
+# STRATIFICATION ensures both train and test sets have similar proportions of TRUE/FALSE.
+
+# Set seed for reproducibility:
 set.seed(222)
 
-# Put 3/4 of the data into the training set 
-chd_split <- initial_split(data = ?, prop = 3/4., strata = chdfate)
+# Split data: 75% training, 25% testing, stratified by chdfate
+# Replace ? with 'chd_full'
+chd_split <- initial_split(data = ?, prop = 3/4, strata = chdfate)
 
-# A)
-# Create data frames for the two sets:
-# As elsewhere, replace the "?" with the correct argument.
+# EXERCISE A: Create training and testing datasets
 chd_train <- training(chd_split)
-chd_test <- testing(?)
+chd_test <- testing(chd_split)  # Replace ? with 'chd_split'
 
-# initiate a recipe:
-# This works by making a recipe and then adding a bunch of steps as below
-# Try to read and understand what each line does,
-# although you shouldn't edit the code
+# Verify the split maintains class balance:
+chd_train %>% count(chdfate) %>% mutate(prop = n/sum(n))
+chd_test %>% count(chdfate) %>% mutate(prop = n/sum(n))
+
+################################################################################
+#### SECTION 4: Data Preprocessing with Recipes ####
+################################################################################
+
+# RECIPES are a powerful way to preprocess data consistently.
+# Think of it like a cooking recipe - a series of steps applied in order.
+
+# Create a preprocessing recipe:
 chd_rec <- 
-  recipe(chdfate ~ ., data = chd_train)  %>% #Define the formula and the data
-  update_role(id, new_role = "ID") %>% #Make it clear that "id" variable is not a predictor
-  step_naomit(all_predictors(), all_outcomes()) %>% #Remove all rows with NA in the predictor or outcome variables
-  step_dummy(all_nominal_predictors()) %>% #Convert characters and factors into binary columns
-  step_zv(all_predictors()) %>% #Remove variables that have the same value across all rows
-  step_center(all_numeric_predictors()) %>% #Normalize numeric data to mean of zero
-  step_scale(all_numeric_predictors()) #Normalize numeric data to have a standard deviation of one
+  recipe(chdfate ~ ., data = chd_train) %>%          # Define formula and data
+  update_role(id, new_role = "ID") %>%               # Mark 'id' as ID, not predictor
+  step_naomit(all_predictors(), all_outcomes()) %>%  # Remove rows with missing values
+  step_dummy(all_nominal_predictors()) %>%           # Convert categorical to binary (0/1)
+  step_zv(all_predictors()) %>%                      # Remove zero-variance predictors
+  step_center(all_numeric_predictors()) %>%          # Center: subtract mean (mean = 0)
+  step_scale(all_numeric_predictors())               # Scale: divide by SD (SD = 1)
 
+# WHY THESE STEPS?
+# - step_dummy: Converts "Male"/"Female" to 0/1 (models need numbers)
+# - step_zv: Removes constant variables (no information)
+# - step_center/scale: Puts all variables on same scale (important for logistic regression!)
 
-# B)
-# Have a look at the recipe by running below line:
-# Are there any of the operations that you don't understand?``
+# EXERCISE B: Examine the recipe
 chd_rec
 
+# Are any operations unclear? Key points:
+# - Recipes define steps but don't execute them yet
+# - We'll "train" the recipe on training data
+# - Then apply the SAME transformations to test data
 
-# Now we train (preprocess) the recipe by learning parameters from the training data
+# Train the recipe by learning parameters from training data:
+# (e.g., learning the mean and SD for centering/scaling)
 preprocessed_rec <- prep(chd_rec, training = chd_train) 
 preprocessed_rec
 
-# Use the recipe to format (bake) the training data
+# Apply the recipe to training data ("baking"):
 chd_train_baked <- bake(preprocessed_rec, new_data = chd_train)
 glimpse(chd_train_baked)
 
-# Now, we can use the same recipe to bake the test data to ensure 
-# that it has undergone the same normalization and formatting as the testing data
+# CRITICAL: Apply the SAME recipe to test data
+# (using training means/SDs, NOT test data statistics!)
 chd_test_baked <- bake(preprocessed_rec, new_data = chd_test)
 glimpse(chd_test_baked)
 
+# CHECKPOINT: Notice how categorical variables like 'sex' became 'sex_Male'
+# This is one-hot encoding from step_dummy()
 
-##### PART 2: time to start our modeling career! ####
-## Define a model type (logistic regression) and engine (glm) #### 
-lr_mod <- 
+
+# Your answer:
+# 
+
+
+################################################################################
+#### PART 2: Model Building and Training ####
+################################################################################
+
+################################################################################
+#### SECTION 5: Building a Logistic Regression Model ####
+################################################################################
+
+# LOGISTIC REGRESSION predicts probabilities for binary outcomes (0 to 1).
+# Unlike linear regression, it uses a logistic function to constrain predictions.
+
+# Define the model:
+lr_model <- 
   logistic_reg() %>% 
-  set_engine("glm")
+  set_engine("glm")  # General Linear Model engine
 
-# Combine the recipe and the model into a workflow:
-# By adding the un-processed recipe, we preprocess it again here, as in PART 2.
-# This is not strictly necessary (we could have used the baked training data as input)
-# but it is more consistent to keep all steps of the modeling in a single workflow as 
-# we do here:
-chd_wflow <- 
+################################################################################
+#### SECTION 6: Creating a Workflow ####
+################################################################################
+
+# WORKFLOWS combine preprocessing (recipe) and modeling in one object.
+# Benefits:
+# - Ensures preprocessing is applied consistently
+# - Makes code cleaner and less error-prone
+# - Easier to deploy in production
+
+chd_workflow <- 
   workflow() %>% 
-  add_model(lr_mod) %>% 
-  add_recipe(chd_rec) 
-chd_wflow
+  add_model(lr_model) %>% 
+  add_recipe(chd_rec)  # We use the un-baked recipe
 
-## Fit model using workflow
-# Notice we use the un-baked data. The fit will preprocess the recipe and bake the data automatically
+chd_workflow
+
+# Notice: We pass the raw recipe, not the baked data!
+# The workflow will handle preprocessing automatically.
+
+################################################################################
+#### SECTION 7: Training the Model ####
+################################################################################
+
+# Fit the model using the workflow:
+# This will automatically prep the recipe and bake the data
 chd_fit <- 
-  chd_wflow %>% 
-  fit(data = chd_train) 
-chd_fit 
+  chd_workflow %>% 
+  fit(data = chd_train)
 
-## Extract model fit in a tidy format
-chd_fit %>% 
+chd_fit
+
+# Extract coefficients in a tidy format:
+model_coefs <- chd_fit %>% 
   extract_fit_parsnip() %>% 
   tidy()
 
+model_coefs
 
-# A)
-# What are the three most significant variables? 
-
-
-# B)
-# Extract the predicted probabilities on the training data from the fitted model.
-Fitted_values_train = augment(chd_fit, chd_train)
-
-
-# C)
-# Make a quick histogram of the class probabilities (probabilities of the chdfate event)
-ggplot(data = Fitted_values_train) + geom_histogram(aes(x=?))
+# EXERCISE A: Identify the most significant variables
+# Look at the p.value column. Which three variables have the smallest p-values?
+# These are the strongest predictors of heart disease.
+# Your answer:
+# 1. 
+# 2. 
+# 3. 
 
 
-# D)
-# Predict on the test data using the fitted workflow. 
-# Notice that the predict function will return TRUE/FALSE per default, rather 
-# than the class probabilities (fitted values as above).
-# If you want these, you can add type = "prob" to the line belw
+################################################################################
+#### SECTION 8: Making Predictions ####
+################################################################################
+
+# EXERCISE B: Get predicted probabilities on training data
+fitted_train <- augment(chd_fit, chd_train)
+
+glimpse(fitted_train)
+# Notice the new columns:
+# - .pred_class: Predicted category (TRUE/FALSE)
+# - .pred_TRUE: Probability of heart disease
+# - .pred_FALSE: Probability of no heart disease
+
+# EXERCISE C: Visualize predicted probabilities
+# Replace ? with '.pred_TRUE'
+ggplot(data = fitted_train) + 
+  geom_histogram(aes(x = ?), bins = 30, fill = "steelblue", alpha = 0.7) +
+  labs(title = "Distribution of Predicted Probabilities (Training Data)",
+       x = "Predicted Probability of Heart Disease",
+       y = "Count")
+
+# EXERCISE D: Predict on test data
+# Replace ? with 'chd_test'
 predict(chd_fit, new_data = ?)
 
+# To get probabilities instead of classes, add type = "prob":
+predict(chd_fit, new_data = chd_test, type = "prob")
 
-# E)
-# Augment predictions to data set using the fitted workflow ####
-chd_aug <- 
-  augment(chd_fit, chd_test)
+################################################################################
+#### PART 3: Model Evaluation ####
+################################################################################
+
+################################################################################
+#### SECTION 9: Evaluating Predictions on Test Data ####
+################################################################################
+
+# EXERCISE E: Add predictions to test data
+chd_aug <- augment(chd_fit, chd_test)
 glimpse(chd_aug)
 
+# EXERCISE F (BONUS): Create a boxplot comparing predicted probabilities
+# by actual outcome
+ggplot(chd_aug, aes(x = chdfate, y = .pred_TRUE, fill = chdfate)) +
+  geom_boxplot() +
+  labs(title = "Predicted Probabilities by Actual Outcome",
+       x = "Actual Heart Disease Status",
+       y = "Predicted Probability of Heart Disease")
 
-# (F)
-# If you have the time, make a ggplot with geom_boxplot that shows the class probabilities on the test data.
+# EXERCISE G: Assess separation ability
+# Question: Can our model separate chdfate TRUE from FALSE?
+# Look at the boxplot:
+# - Do the boxes overlap a lot or are they well separated?
+# - What would perfect separation look like?
+# Your answer:
+#
 
 
-# (G)
-# Is our model able to separate chdfate == T from chdfate == F?
+################################################################################
+#### SECTION 10: ROC Curves and AUC ####
+################################################################################
 
+# ROC (Receiver Operating Characteristic) Curve:
+# - Shows trade-off between True Positive Rate and False Positive Rate
+# - X-axis: False Positive Rate (wrongly predicting disease)
+# - Y-axis: True Positive Rate (correctly predicting disease)
+# - Perfect classifier: goes straight up then right (area = 1.0)
+# - Random classifier: diagonal line (area = 0.5)
 
-#### PART 3 ### Measuring performance
-# A commonly used measure of model performance is an area-under-the-receiver-operator curve (AUROC or ROC)
-# plot a ROC curve on the test set using autoplot
+# Plot ROC curve:
 chd_aug %>% 
   roc_curve(truth = chdfate, .pred_TRUE) %>% 
-  autoplot()
+  autoplot() +
+  labs(title = "ROC Curve for Heart Disease Prediction")
 
-# Calculate the AUC without plotting
-chd_aug %>% 
+# Calculate AUC (Area Under Curve):
+auc_result <- chd_aug %>% 
   roc_auc(truth = chdfate, .pred_TRUE)
 
-# A)
-# What would the AUC score be, if the model had no ability to separate chdfate == T / F ?
+auc_result
+
+# EXERCISE A: Understanding AUC
+# If the model had NO ability to separate classes, what would AUC be?
+# Answer: 0.5 (same as random guessing)
+# 
+# AUC interpretation:
+# - 0.5: No better than random
+# - 0.7-0.8: Acceptable
+# - 0.8-0.9: Excellent
+# - 0.9+: Outstanding
+
+# EXERCISE B: Evaluate your model's AUC
+# Look at the .estimate value. Is this a good score?
+# Your assessment:
+# 
+
+# EXERCISE C: Brainstorm improvements
+# How could we improve the model? Consider:
+# - Adding more features
+# - Feature engineering (interactions, polynomials)
+# - Different model types (we'll explore this in later modules!)
+# - More data
+# Your ideas:
+#  
 
 
-# B) 
-# Do you think the AUC score we get is good?
+################################################################################
+#### PART 4: Cross-Validation ####
+################################################################################
 
+################################################################################
+#### SECTION 11: Cross-Validation ####
+################################################################################
 
-# C)
-# Do you have any thoughts on how it could be improved? 
+# CROSS-VALIDATION provides more robust performance estimates than a single test set.
+# 
+# K-FOLD CROSS-VALIDATION:
+# 1. Split training data into K "folds" (subsets)
+# 2. Train on K-1 folds, validate on the remaining fold
+# 3. Repeat K times, each fold getting a turn as validation set
+# 4. Average the K performance scores
+#
+# Benefits:
+# - Uses all data for both training and validation
+# - More stable performance estimates
+# - Detects overfitting
 
-
-#### PART 4 ####
-## Cross-validation folds (data subsets) ####
+# Create 10-fold cross-validation splits:
 set.seed(345)
-folds <- vfold_cv(chd_train, v = 10)
-folds
+cv_folds <- vfold_cv(chd_train, v = 10)
+cv_folds
 
-## Fit our model with cross-validation (resampling) ####
+# Each row is one fold showing how many observations are in training/validation
+
+################################################################################
+#### SECTION 12: Fit Model with Cross-Validation ####
+################################################################################
+
 set.seed(456)
-chd_fit_rs <- 
-  chd_wflow %>% 
-  fit_resamples(folds)
-chd_fit_rs
+chd_fit_cv <- 
+  chd_workflow %>% 
+  fit_resamples(cv_folds)
 
-# Print performance metrics from the resampling method
-collect_metrics(chd_fit_rs)
+chd_fit_cv
 
-# Look at the performance from the model evaluated on test-data
-chd_aug %>% 
+# Collect and view metrics from all folds:
+cv_metrics <- collect_metrics(chd_fit_cv)
+cv_metrics
+
+# These are AVERAGED across all 10 folds!
+
+################################################################################
+#### SECTION 13: Comparing Cross-Validation vs Test Set ####
+################################################################################
+
+# Cross-validation performance (on training data folds):
+cv_metrics
+
+# Test set performance:
+test_auc <- chd_aug %>% 
   roc_auc(truth = chdfate, .pred_TRUE)
 
-chd_aug %>% 
+test_accuracy <- chd_aug %>% 
   accuracy(truth = chdfate, .pred_class)
 
+test_auc
+test_accuracy
 
-# A)
-# Does the cross-validation and test-data approach give similar AUC and accuracy?
+# EXERCISE A: Compare the results
+# Are the cross-validation and test set metrics similar?
+# Your observation:
+# 
 
+# EXERCISE B: What if they were very different?
+# Possible interpretations:
+# - CV much better than test: May have gotten "lucky" or "unlucky" with test split
+# - Test much better than CV: Possible overfitting, or test set easier
+# - Large discrepancy: Could indicate problem with data split or model instability
+#
+# If you see big differences, what would you do?
+# - Try different random seeds
+# - Use stratification (we already did!)
+# - Increase test set size
+# - Check for data leakage
 
-# B)
-# What would it mean if it didn't?
+################################################################################
+#### KEY TAKEAWAYS ####
+################################################################################
+
+# 1. Classification predicts categories, not continuous values
+# 2. Logistic regression outputs probabilities (0 to 1)
+# 3. Recipes ensure consistent preprocessing
+# 4. Workflows combine preprocessing and modeling elegantly
+# 5. ROC curves and AUC measure classification performance
+# 6. Cross-validation gives more reliable performance estimates
+# 7. Always compare training/CV/test performance to detect overfitting
+
+# NEXT: We'll explore regularization to improve model generalization!

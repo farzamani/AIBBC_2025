@@ -1,188 +1,368 @@
 ########
 # 
-# Supervised learning I
-# Linear regression and tidymodels
+# Supervised Learning I - Linear Regression with Tidymodels
 # 
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
 # Aarhus University
 # 
 ########
 
-## Load packages
-library(tidyverse)       # for tidyverse
-library(tidymodels)      # for tidymodels
-library(GGally)          # Extension to our plotting library(ggplot2)
-library(skimr)           # for variable summaries
-library(ggpubr)          # Package to make ggplots nicer
-tidymodels_prefer(quiet = TRUE) #Set tidymodels as the default whenever multiple packages have functions with the same name
+################################################################################
+#### PART 1: Setup and Data Preparation ####
+################################################################################
 
-### PART 0: Loading and recoding the Framingham data set ####
-# Load and reformat the Framingham data set. We now look at a bigger chunk of the data than
-# we have done in the last few modules. But, the features should look similar to you.
-# Else, you can read about the data in "Framingham Didactic Data Dictionary.pdf". 
+################################################################################
+#### SECTION 1: Introduction to Supervised Learning ####
+################################################################################
+
+# WHAT IS SUPERVISED LEARNING?
+# Supervised learning uses labeled data to predict outcomes for new data.
+# We "supervise" the algorithm by showing it examples with known answers.
+# 
+# Key concepts:
+# - Features (predictors): Variables we use to make predictions (age, BMI, etc.)
+# - Target (response): Variable we want to predict (e.g., BMI, disease status)
+# - Training data: Data used to build the model
+# - Test data: Data used to evaluate the model
+#
+# Today we'll use LINEAR REGRESSION to predict continuous outcomes.
+
+################################################################################
+#### SECTION 2: Loading Packages ####
+################################################################################
+
+library(tidyverse)   # For data manipulation and visualization
+library(tidymodels)  # For modeling workflows
+library(GGally)      # For pairwise plotting
+library(skimr)       # For data summaries
+library(ggpubr)      # For enhanced ggplot themes
+
+# Set tidymodels as default when functions have the same name across packages:
+tidymodels_prefer(quiet = TRUE)
+
+################################################################################
+#### SECTION 3: Loading the Full Dataset ####
+################################################################################
+
+# Load the complete Framingham dataset (larger than previous exercises):
 chd_full <- read_rds("Data/chd_full.rds")
 
-### PART 1: Explore the data and its correlation structure ####
-# Look at the the data. What are some of the difference compared to before the formatting?
-glimpse(?)
+# Examine the structure:
+glimpse(chd_full)
 
-# Try also using skim instead of glimpse: This gives a different overview.
+# Try skim() for a more detailed overview:
 chd_full %>% 
-  skimr::skim() 
+  skimr::skim()
 
-# A)
-# Do you prefer glimpse or skim? Why?
-# Answer:
+# EXERCISE A: Compare glimpse() and skim()
+# Which do you prefer? Why? Consider:
+# - Speed and readability
+# - Amount of information provided
+# - When you'd use each one
+# Your answer:
+# 
 
 
-# B)
-# Check proportions of patients that developed congenital heart disorder (chdfate == T)
+################################################################################
+#### SECTION 4: Understanding the Target Variable ####
+################################################################################
+
+# Before modeling, always examine your target variable!
+
+# EXERCISE B: Check proportions of patients with heart disease
+# Replace ? with 'chdfate'
 chd_full %>% 
   dplyr::count(?) %>% 
-  mutate(prop = n/sum(n))
+  mutate(proportion = n / sum(n))
 
+# CHECKPOINT: Is the dataset balanced? Or do we have many more of one class?
 
-# Time to prepare for modelling.
-# First we split the data, so that we save some data for testing our model.
+################################################################################
+#### SECTION 5: Train-Test Split ####
+################################################################################
+
+# CRITICAL CONCEPT: We NEVER test our model on the same data we trained it on!
+# This would be like teaching to the test - we'd get overly optimistic results.
+
+# Set a random seed for reproducibility:
 set.seed(122)
+
+# Split data: 80% for training, 20% for testing
+# Replace ? with 'chd_full'
 chd_split <- initial_split(data = ?, prop = 0.80)
 
-
-# C)
-# Create data frames for the two sets:
+# EXERCISE C: Create training and testing datasets
 chd_train <- training(chd_split)
-chd_test <- testing(?)
+chd_test <- testing(chd_split)  # Replace ? with 'chd_split'
 
-# Look at the outputs
-chd_test
-chd_train
-chd_split
+# Examine the split:
+chd_train  # Training data
+chd_test   # Testing data
+chd_split  # Split information
 
+# EXERCISE D: Discussion questions (discuss with neighbors or write answers):
+# i.   What does initial_split() do? How does it decide which rows go where?
+# 
+# ii.  Why is it crucial to split into train and test sets?
+# 
+# iii. Trade-off: Why might you want a LARGE training set? A LARGE test set?
+# 
+# iv.  Advanced: When might you need a THIRD set (validation set)?
+# 
 
-# D)
-# Consider the above and discuss with your neighbor(s):
-# i.   What does the code do?
-# ii.  Why is it important to split into a train and a test set?
-# iii. Why would you want a large train set and why a large test set?
-# iv.  Often a validation set is also created. Why and under what circumstances 
-#      is that a good idea?
+################################################################################
+#### SECTION 6: Exploratory Data Analysis (EDA) ####
+################################################################################
 
-## We start by doing some exploratory plotting of the data.
-#  Generally follow the paradigm: "tegne før regne"[DK]
-#  i.e: "drawing before calculating"[EN]. (It rhymes in Danish..)
+# Danish saying: "tegne før regne" (draw before you calculate!)
+# Always visualize your data before modeling!
 
-
-# E)
-# why the `-1` below? 
+# Get all variable names except the first one (id):
 var_names <- names(chd_train)[-1]
 
+# EXERCISE E: Why do we exclude the first column with [-1]?
+# Hint: Look at what the first column contains
+# Answer:
+# 
 
-# F)
-# now we make an all-against-all comparison of the variables using ggpairs.
+
+# EXERCISE F: Create a pairwise plot matrix
+# This shows all variables plotted against each other
 chd_train %>%
   ggpairs(columns = var_names)
 
+# Note: This may take a minute to generate!
 
-# G)
-# Explore and understand the output you just generated
-# i.   Press zoom and adjust the window size to see as many details as possible.
-#      You may select a smaller set of variables to show, by adjusting the 
-#      var_names vector, if the plot does not display well on your screen.
-# ii.  First focus on the diagonal plots:
-#      - What do they show? 
-#      - What do you think determines the plot types?
-#      - What types of plots are they?
-# iii. What types of plots are present in the rest of plot and when?
-# iv.  Is there any indication the explanatory variables correlate with the 
-#      response variable chdfate?
+# EXERCISE G: Interpret the ggpairs output
+# i. Press "Zoom" in the Plots panel for a better view.
+#    If the plot is too crowded, try a smaller subset:
+#    var_names_small <- c("age", "sbp", "dbp", "bmi", "scl", "chdfate")
+#    Then re-run ggpairs with: columns = var_names_small
+
+# ii. Focus on the DIAGONAL (top-left to bottom-right):
+#     - What do these plots show?
+#     - Why are they different plot types?
+#     - What plot types do you see? (histogram, density, bar plot?)
+
+# iii. Look at the OFF-DIAGONAL plots:
+#      - What plot types appear? When?
+#      - Hint: Compare numeric vs numeric, numeric vs categorical
+
+# iv. Examine correlations with chdfate:
+#     - Do any variables seem strongly related to heart disease?
+#     - Which variables might be good predictors?
+
+# Your observations:
+# 
 
 
-#### PART 2: Modelling ####
-# Now we try to fit a linear regression model to the data. Given that chdfate 
-# is binary, it is not suitable for ordinary regression analysis. We therefore 
-# start by focusing on bmi and ask whether its variation can be explained by 
-# the other variables.
+################################################################################
+#### PART 2: Building Models ####
+################################################################################
 
-# We start by ordinary linear regression with the default least squares 
-# inference engine:
+################################################################################
+#### SECTION 7: Building Your First Linear Regression Model ####
+################################################################################
+
+# LINEAR REGRESSION BASICS:
+# We're predicting a continuous outcome (BMI) from other variables.
+# The formula: BMI = β₀ + β₁×sbp + β₂×sex + ε
+# 
+# Note: chdfate is binary (TRUE/FALSE), so we'll start with BMI as our target.
+# We'll get to binary classification later!
+
+# THE TIDYMODELS WORKFLOW:
+# 1. Specify the model type: linear_reg()
+# 2. Fit the model to training data: fit()
+# 3. Examine results: tidy()
+
+# Example: Predict BMI from systolic blood pressure and sex
 lm_fit <- 
   linear_reg() %>% 
   fit(bmi ~ sbp + sex, data = chd_train)
 
-# print the fit:
+# View the model:
 lm_fit
 
-# extract a tidy representation of the inference results:
+# Get a tidy summary of coefficients:
 tidy(lm_fit)
 
-# A)
-# i. Look at the results and try to understand them.
-#    You may refer to the lm function or to Figure 7.4 in:
-#    https://argoshare.is.ed.ac.uk/healthyr_book/regression.html 
+# EXERCISE A: Interpret the results
+# Look at the 'estimate' column:
+# - The (Intercept) is the baseline BMI
+# - Each coefficient shows how much BMI changes per unit increase in that variable
+# - The p.value shows if the effect is statistically significant (< 0.05)
+#
+# Resources: https://argoshare.is.ed.ac.uk/healthyr_book/regression.html (Fig 7.4)
+#
+# Questions to consider:
+# - What is the effect of sbp on BMI?
+# - How does sex affect BMI?
+# - Are these effects significant? 
 
 
-# B)
-# i. Try to modify the formula in the below (the part with "~") to specify 
-#    a different model dependent on other or more variables. 
-# ii. Look at and interpret the results.  
-lm_fit <- 
+################################################################################
+#### SECTION 8: Adding More Predictors ####
+################################################################################
+
+# EXERCISE B: Build a more complex model
+# Add more variables to the formula. For example, try:
+# bmi ~ sbp + sex + age + scl
+lm_fit2 <- 
   linear_reg() %>% 
-  ?(bmi ~ sbp + sex + ?, data = chd_train)
-tidy(lm_fit)
+  fit(bmi ~ sbp + sex + ?, data = chd_train)
 
-# C)
-#      The below formula specifies that bmi should be explained by all variables 
-#      in the data apart from "id".
-# i.   Execute the code.
-# ii.  Which variables have significant coefficients in the model?
-# iii. Which variables have the largest effect sizes.
-# iV.  How do you think scaling or nornmalisation would affect effect sizes? 
-# We will look more at this in the next set of exercies (1_5_1), but 
-# don't dive in too deep yet.
+tidy(lm_fit2)
 
-lm_fit <- 
-  ?() %>% 
-  fit(bmi ~ . -id , data = chd_train)
-tidy(lm_fit)
+# Compare this to the previous model. What changed?
 
-## Draw dot-and-whisker plots (also known as a coefficient plot)
-tidy_data = tidy(lm_fit)%>%
+################################################################################
+#### SECTION 9: Full Model with All Predictors ####
+################################################################################
+
+# The formula "bmi ~ . - id" means:
+# Predict BMI using ALL variables EXCEPT id
+
+# EXERCISE C: Fit a model with all predictors
+lm_fit_full <- 
+  linear_reg() %>% 
+  fit(bmi ~ . - id, data = chd_train)
+
+tidy(lm_fit_full)
+
+# Examine the results:
+# i.   Which variables have significant coefficients (p.value < 0.05)?
+# ii.  Which variables have the LARGEST effect sizes (biggest estimates)?
+# iii. Which variables have the SMALLEST effect sizes?
+# iv.  Advanced question: How would standardizing (scaling) variables 
+#      affect the interpretation of effect sizes?
+#      (We'll explore this more in the next module!)
+
+################################################################################
+#### SECTION 10: Visualizing Coefficients ####
+################################################################################
+
+# A coefficient plot (dot-and-whisker plot) helps visualize model results.
+
+# Prepare data: remove intercept for clearer visualization
+coef_data <- tidy(lm_fit_full) %>%
   filter(term != "(Intercept)")
 
-ggplot(tidy_data, aes(x = estimate, y = term))+
-  geom_errorbarh(aes(xmin = estimate-std.error, xmax = estimate+std.error))+
-  geom_vline(xintercept = 0, lty = 2, linewidth = 0.5, col = "gray")+
+# Create the plot:
+ggplot(coef_data, aes(x = estimate, y = term)) +
+  geom_errorbarh(aes(xmin = estimate - std.error, 
+                     xmax = estimate + std.error)) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 0, lty = 2, linewidth = 0.5, col = "red") +
+  labs(title = "Coefficient Plot",
+       x = "Estimate (Effect Size)",
+       y = "Variable") +
   theme_classic2()
-  
 
-# D)
-# What does the dot-and-whisker plt show and why is it useful?
-
-
-# E)
-# Make predictions on the test data (chd_test) using the above full model:
-chd_test_w_pred <- augment(lm_fit, new_data = ?)
-
-
-# F)
-# Look at the chd_test_w_pred  with glimpse, skim, or similar
+# EXERCISE D: Interpret the coefficient plot
+# - The dot shows the estimated effect
+# - The line shows uncertainty (standard error)
+# - The red dashed line is zero (no effect)
+# - Coefficients that cross zero are not significant
+#
+# Questions:
+# - Which variables have the clearest (most significant) effects?
+# - Which variables are uncertain (wide error bars)?
+# - Why is this visualization useful compared to just reading a table?
 
 
-# G)
-# Plot the original bmi values against the predictions by filling in 
-# the ?s below:
-ggplot(chd_test_w_pred ) + geom_point(aes(?, ?))
+################################################################################
+#### PART 3: Testing and Evaluation ####
+################################################################################
 
-# Plot the residuals
-ggplot(chd_test_w_pred ) + geom_histogram(aes(?))
+################################################################################
+#### SECTION 11: Making Predictions on Test Data ####
+################################################################################
 
+# Now for the critical step: testing on data the model has NEVER seen!
 
-# H)
-# What does the distribution of residuals tell us about the model?
+# EXERCISE E: Make predictions on test data
+# Replace ? with 'chd_test'
+chd_test_predictions <- augment(lm_fit_full, new_data = ?)
 
+# EXERCISE F: Examine the predictions
+# Use glimpse() or View() to see the new columns:
+glimpse(chd_test_predictions)
 
-# I)
-# Use the rmse function to calculate root-mean-squared-error (look up help page)
-chd_test_w_pred  %>% rmse(truth = ?, estimate = ?)
+# Notice the new columns:
+# - .pred = predicted BMI values
+# - .resid = residuals (actual - predicted)
 
-# Can you formulate what that means in words?
+################################################################################
+#### SECTION 12: Evaluating Model Performance ####
+################################################################################
+
+# EXERCISE G: Plot actual vs predicted BMI
+# Replace the first ? with 'bmi' (actual values)
+# Replace the second ? with '.pred' (predicted values)
+ggplot(chd_test_predictions, aes(x = ?, y = ?)) + 
+  geom_point(alpha = 0.5) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Actual vs Predicted BMI",
+       x = "Actual BMI",
+       y = "Predicted BMI") +
+  coord_equal()
+
+# The red line shows perfect predictions. Points close to it are good!
+
+# Plot the distribution of residuals:
+# Replace ? with '.resid'
+ggplot(chd_test_predictions, aes(x = ?)) + 
+  geom_histogram(bins = 30, fill = "steelblue", alpha = 0.7) +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Distribution of Residuals",
+       x = "Residual (Actual - Predicted)",
+       y = "Count")
+
+# EXERCISE H: Interpret the residuals
+# Ideally, residuals should be:
+# - Centered around zero (no systematic bias)
+# - Normally distributed (bell-shaped)
+# - Small magnitude (close to zero)
+#
+# Questions:
+# - Is the distribution centered at zero?
+# - Are there outliers (very large residuals)?
+# - What does this tell you about model performance?
+
+################################################################################
+#### SECTION 13: Quantifying Model Performance ####
+################################################################################
+
+# EXERCISE I: Calculate Root Mean Squared Error (RMSE)
+# RMSE measures the average prediction error in the same units as BMI.
+# Replace first ? with 'bmi', second ? with '.pred'
+chd_test_predictions %>% 
+  rmse(truth = ?, estimate = ?)
+
+# INTERPRETATION:
+# RMSE tells us the typical size of prediction errors.
+# For example, if RMSE = 3.5, our predictions are typically off by ±3.5 BMI points.
+#
+# Lower RMSE = better model performance!
+
+# Additional metrics you can try:
+# - R-squared: chd_test_predictions %>% rsq(truth = bmi, estimate = .pred)
+# - Mean Absolute Error: chd_test_predictions %>% mae(truth = bmi, estimate = .pred)
+
+################################################################################
+#### KEY TAKEAWAYS ####
+################################################################################
+
+# 1. Always split data into train and test sets
+# 2. Explore data before modeling (ggpairs is your friend!)
+# 3. Start simple, then add complexity
+# 4. Visualize coefficients to understand what matters
+# 5. Evaluate on test data, not training data
+# 6. Use multiple metrics (RMSE, R², visualizations) to assess performance
+
+# NEXT STEPS:
+# - Try different variable combinations
+# - Consider interactions (e.g., age * sex)
+# - Think about which variables make biological sense
+# - Prepare for classification in the next module!

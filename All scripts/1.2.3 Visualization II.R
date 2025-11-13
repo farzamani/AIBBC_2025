@@ -1,168 +1,315 @@
 #####
 # 
-# Visualising Data in R II
+# Visualising Data in R II - Advanced ggplot2
 #
 # Simon Grund Sorensen, Jakob Skou Pedersen, Søren Besenbacher, Farhad Zamani
 # Aarhus University
 # 
 #####
 
-# We now begin exploring a subset of the Framingham Heart Study
-# data set. The data set consists of 4,699 observations of 9 variables. You can
-# read about the data set in the uploaded PDFs and at this website:
-# https://www.causeweb.org/tshs/framingham-didactic/
+################################################################################
+#### SECTION 1: Introduction to the Framingham Heart Study Dataset ####
+################################################################################
 
-# We will work on a sub-sample made with the following command:
-# chd_small <- slice_sample(chd_full, n = 500)
+# Load required packages
+library(tidyverse)
 
-# Load the data set:
-chd_500 <- read_rds("Data/chd_500.rds")
+# We'll use data from the Framingham Heart Study - a famous long-term 
+# cardiovascular study. The full dataset has 4,699 observations.
+# Read more: https://www.causeweb.org/tshs/framingham-didactic/
 
-# Have a look at the data together with the pdf with the data set introduction:
-glimpse(chd_500)
+# Load a 500-patient subsample:
+chd_data <- read_rds("Data/chd_500.rds")
 
-# Some of the variables have been abbreviated. You can read their full name in "Framingham Didactic Data Dictionary_2.pdf".
-# Here are the most important ones:
-# sbp = Systolic blood pressure, mm Hg
-# dbp = Diastolic blood pressure, mm Hg
-# scl = Serum cholesterol, mg/100 mL
-# chdfate = Patient had developed congenital heart disorder at follow-up
+# Examine the structure:
+glimpse(chd_data)
 
-# Let's do some visualisations to get a better feel of the data!
+# KEY VARIABLES (see "Framingham Didactic Data Dictionary_2.pdf" for details):
+# - sbp: Systolic blood pressure (mm Hg)
+# - dbp: Diastolic blood pressure (mm Hg) 
+# - scl: Serum cholesterol (mg/100 mL)
+# - bmi: Body Mass Index
+# - age: Patient age (years)
+# - sex: Patient sex (male/female)
+# - month: Month of enrollment
+# - chdfate: Whether patient developed coronary heart disease (TRUE/FALSE)
 
-# A)
-# Replace the ?'s to bmi against dbp
-# (Note that the ggplot object is saved and can now be reused and extended)
-p <- ggplot(chd_500, aes(?, ?)) 
-p + 
-  geom_point()
+################################################################################
+#### PART 1: Exploring Plot Types ####
+################################################################################
 
+################################################################################
+#### SECTION 2: Scatter Plots and Regression Lines ####
+################################################################################
 
-# B)
-# Add a linear model regression line by specifying smoothing method 
-p + geom_point() + 
+# One powerful feature of ggplot is that you can save the base plot and reuse it!
+
+# Example: Create a base plot showing systolic vs diastolic blood pressure
+base_plot <- ggplot(chd_data, aes(sbp, dbp))
+base_plot + geom_point()
+
+# EXERCISE A: Create a plot comparing BMI (x-axis) against DBP (y-axis)
+# Replace the ?'s with variable names
+my_plot <- ggplot(chd_data, aes(?, ?)) 
+my_plot + geom_point()
+
+# EXERCISE B: Add a linear regression line to show the trend
+# Replace the ? with the parameter name 'method'
+my_plot + 
+  geom_point() + 
   geom_smooth(? = "lm")
 
+# CHECKPOINT: What does the regression line tell you about the relationship between BMI and blood pressure?
 
-# C)
-# Replace the ? to make bar plot of patients enrolled per month 
-ggplot(chd_500) + 
-  ?(aes(month)) 
+################################################################################
+#### SECTION 3: Bar Plots for Categorical Data ####
+################################################################################
 
+# Bar plots are great for showing counts of categorical variables.
 
-# D)
-# Replace the ?'s to make a stacked bar plot patients enrolled per month by sex
-ggplot(chd_500) + 
+# Example: Count patients by sex
+ggplot(chd_data) + 
+  geom_bar(aes(sex))
+
+# EXERCISE C: Make a bar plot showing patients enrolled per month
+# Replace ? with geom_bar
+ggplot(chd_data) + 
+  ?(aes(month))
+
+# We can also show TWO categorical variables at once using stacked bars.
+
+# EXERCISE D: Make a stacked bar plot of enrollment by month, filled by sex
+# Replace the first ? with 'sex' and the second ? with "stack"
+ggplot(chd_data) + 
   geom_bar(aes(month, fill = ?), position = ?)
 
+################################################################################
+#### SECTION 4: Box Plots, Violin Plots, and Dot Plots ####
+################################################################################
 
-# E)
-# Make box plot of sex vs bmi
-ggplot(chd_500, aes(sex, bmi)) + 
+# These plots show the distribution of a continuous variable across categories.
+
+# Example: Distribution of age by sex
+ggplot(chd_data, aes(sex, age)) + 
+  geom_boxplot()
+
+# EXERCISE E: Make a box plot of sex vs BMI
+# Replace ? with geom_boxplot
+ggplot(chd_data, aes(sex, bmi)) + 
   geom_?()
 
+# EXERCISE F: Change it to a violin plot (shows the full distribution shape)
+# (Hint: replace geom_boxplot with geom_violin)
+ggplot(chd_data, aes(sex, bmi)) + 
+  ?
 
-# F)
-# Using the cheat sheet, change it to a violin plot ...
-
-
-# G)
-# ... and then a dotplot, where the binwidth needs to be set for it to meaningful
-ggplot(chd_500, aes(sex, bmi)) + 
+# EXERCISE G: Make a dot plot where each dot represents a patient
+# Replace the first ? with 'geom_dotplot' and second ? with a number like 1
+ggplot(chd_data, aes(sex, bmi)) + 
   geom_?(binaxis = "y", stackdir = "center", binwidth = ?)
 
+# CHECKPOINT: Which plot type (box, violin, or dot) do you find most informative? Why?
 
-# H)
-# If time permits try some of the other geoms, selecting relevant types 
-# and combinations of variables based on the cheat sheet overview .
+################################################################################
+#### PART 2: Customizing Plots - Colors, Scales, Labels ####
+################################################################################
+
+################################################################################
+#### SECTION 5: Customizing Colors ####
+################################################################################
+
+# ggplot has many built-in color palettes to make your plots more attractive.
 
 
-#### Exercises part II ########################################################
+################################################################################
+#### SECTION 5: Customizing Colors ####
+################################################################################
 
-# A)
-# Overwrite the default color palettes using the below suggestions:
-# Try these continuous color scales: scale_color_viridis_c() or scale_colour_gradientn(colours=rainbow(4))
-p <- ggplot(chd_500, aes(sbp, dbp))
+# ggplot has many built-in color palettes to make your plots more attractive.
 
-p + 
+# First, let's create a base plot we'll reuse:
+bp_plot <- ggplot(chd_data, aes(sbp, dbp))
+
+# CONTINUOUS COLOR SCALES (for numeric variables like BMI):
+
+# Example: Default color scale
+bp_plot + geom_point(aes(color = bmi))
+
+# EXERCISE A: Try a better color scale for continuous data
+# Add one of these after the geom_point:
+# - scale_color_viridis_c() (colorblind-friendly!)
+# - scale_colour_gradientn(colours = rainbow(4))
+bp_plot + 
   geom_point(aes(color = bmi)) + 
   ?
-  
 
-# B)
-# Try to add this discrete color scale: scale_colour_brewer(palette="Paired")
-p + 
-  geom_point(aes(color = sex))
+# DISCRETE COLOR SCALES (for categorical variables):
 
-p + 
-  geom_point(aes(color = month))
+# EXERCISE B: Try the Brewer color palette for categorical data
+# Add: scale_colour_brewer(palette = "Paired")
+bp_plot + 
+  geom_point(aes(color = sex)) +
+  ?
 
+# Try it with month too:
+bp_plot + 
+  geom_point(aes(color = month)) +
+  scale_colour_brewer(palette = "Paired")
 
-# C)
-# Try to reverse the x or y scales with scale_x_reverse() or scale_y_reverse()
-ggplot(chd_500, aes(sbp, dbp)) +
-  geom_point(aes(color = month)) + ?
+################################################################################
+#### SECTION 6: Adjusting Axes and Labels ####
+################################################################################
 
+# EXERCISE C: Reverse the x-axis to show high values on the left
+# Add scale_x_reverse() to the plot
+ggplot(chd_data, aes(sbp, dbp)) +
+  geom_point(aes(color = month)) + 
+  ?
 
-# D)
-# Try to add meaningful title, and labels to the x- and y-axis using xlab() and ylab(), and a ggtitle()
-ggplot(chd_500, aes(sbp, dbp)) + 
-  geom_point(aes(color = month)) + ?
+# EXERCISE D: Add informative labels and a title
+# Use: xlab("Label"), ylab("Label"), ggtitle("Title")
+ggplot(chd_data, aes(sbp, dbp)) + 
+  geom_point(aes(color = month)) + 
+  xlab("?") +
+  ylab("?") +
+    ggtitle("?")
 
+################################################################################
+#### PART 3: Faceting and Advanced Layouts ####
+################################################################################
 
-#### Exercises part III ########################################################
+################################################################################
+#### SECTION 7: Faceting - Multiple Subplots ####
+################################################################################
 
-# A)
-# Make a facet_wrap based on month by replacing the ?
-ggplot(chd_500, aes(sbp, dbp, color = month)) + geom_point() + facet_wrap(~?)
-
-
-# B)
-# Adjust to using four rows (using nrow)
-ggplot(chd_500, aes(sbp, dbp, color = month)) + geom_point() + facet_wrap(~month, ?)
-
-
-# C)
-# Adjust the number columns in facet_wrap() (using ncol)
-
-
-# D)
-# Make a facet_grid of sex versus chdfate replacing the ?'s
-# (note that the plot will not draw until you print p by executing the second line below) 
-p <- ggplot(chd_500, aes(sbp, dbp, color = month)) + geom_point() + facet_grid(?~?)
-p
+# Faceting creates multiple small plots, one for each category.
 
 
-# E)
-# If time allows:
-# Try to make a plot that shows the proportion of heart disease among men and women.
-# One way to achieve this, is adobt the strategy in R4DS, sect. 2.5.2
-# position = "fill" works like stacking, but makes each set of stacked bars 
-# the same height. This makes it easier to compare proportions across groups.
+################################################################################
+#### SECTION 7: Faceting - Multiple Subplots ####
+################################################################################
+
+# Faceting creates multiple small plots, one for each category.
+# This is incredibly powerful for comparing patterns across groups!
+
+# Example: Separate plot for each sex
+ggplot(chd_data, aes(sbp, dbp)) + 
+  geom_point() + 
+  facet_wrap(~sex)
+
+# EXERCISE A: Create separate plots for each month
+# Replace ? with 'month'
+ggplot(chd_data, aes(sbp, dbp, color = month)) + 
+  geom_point() + 
+  facet_wrap(~?)
+
+# EXERCISE B: Arrange the facets in 4 rows
+# Add the parameter nrow = 4 inside facet_wrap
+ggplot(chd_data, aes(sbp, dbp, color = month)) + 
+  geom_point() + 
+  facet_wrap(~month, ?)
+
+# EXERCISE C: Instead of rows, specify 3 columns using ncol
+# (Hint: use ncol = 3)
+ggplot(chd_data, aes(sbp, dbp, color = month)) + 
+  geom_point() + 
+  facet_wrap(~month, ?)
+
+# FACET_GRID: For two categorical variables, use facet_grid
+
+# EXERCISE D: Create a grid with sex as rows and chdfate as columns
+# Format: facet_grid(rows ~ columns)
+my_facet_plot <- ggplot(chd_data, aes(sbp, dbp, color = month)) + 
+  geom_point() + 
+  facet_grid(? ~ ?)
+
+# Print the plot:
+my_facet_plot
+
+# CHECKPOINT: How does facet_wrap differ from facet_grid?
+# - facet_wrap: wraps panels into multiple rows/columns (for one variable)
+# - facet_grid: creates a matrix layout (for two variables)
+
+################################################################################
+#### PART 4: Advanced Topics and Exporting ####
+################################################################################
+
+################################################################################
+#### SECTION 8: Advanced Exercise - Proportions ####
+################################################################################
+
+# EXERCISE E (BONUS): Create a plot showing the PROPORTION of heart disease 
+# by sex, not just counts.
+# Hint: Use geom_bar with position = "fill"
+# See R4DS section 2.5.2 for guidance
+
+ggplot(chd_data, aes(x = sex, fill = chdfate)) + 
+  geom_bar(position = "fill") +
+  ylab("Proportion") +
+  ggtitle("Proportion of Heart Disease by Sex")
 
 
-#### Exercises part IV ########################################################
+################################################################################
+#### SECTION 9: Saving Your Plots ####
+################################################################################
 
-# The plot shown to the right can be saved with ggplot, e.g.: 
-ggsave("Output/chd_500_grid_facet.pdf", width = 20, height = 20, units = "cm", device = "pdf")
+# Once you've created a beautiful plot, you'll want to save it!
+# Use ggsave() to export plots in various formats.
 
-# A) Try to save a plot in pdf format
-# B) Try to save a plot in png format
-# C) Download the plots to your laptop
+# Example: Save the last plot you created
+# ggsave("Output/my_plot.pdf", width = 20, height = 15, units = "cm")
 
+# EXERCISE A: Create a plot and save it as PDF
+my_facet_plot  # This displays the plot
+ggsave("Output/chd_facet_plot.pdf", width = 20, height = 20, units = "cm")
 
-# D)
-# Try to plot a map of Denmark using the below commands:
+# EXERCISE B: Save the same plot as PNG (better for presentations/websites)
+# Just change the file extension to .png
+ggsave("Output/chd_facet_plot.png", width = 20, height = 20, units = "cm")
 
-# If on local, install devtools and the mapDK package straight from github,
-# by running the bottom code from the install_packages script.
+# EXERCISE C: Download the plots to your laptop
+# (If working on a server: look in the Output folder and download the files)
+
+# TIP: You can control the resolution of PNG files with the 'dpi' parameter:
+# ggsave("plot.png", dpi = 300)  # High quality for publications
+
+################################################################################
+#### SECTION 10: Bonus - Plotting Maps (Optional) ####
+################################################################################
+
+# R can also create geographic visualizations!
+
+# EXERCISE D: Plot a map of Denmark
+# First install the package (if not already installed):
+# install.packages("devtools")
+# devtools::install_github("sebastianbarfort/mapDK")
+
 library(mapDK)
 mapDK()
 
+# EXERCISE E: Think about adding data to this map
+# What variables would you need in a dataframe to add data points?
+# Consider:
+# - Geographic coordinates (latitude, longitude)
+# - Region/municipality names
+# - The data values you want to visualize
 
-# E)
-# How do you think data could be added to this plot. What variables would a dataframe/tibble need? 
+# EXERCISE F (ADVANCED BONUS): Plot a map of Kenya
+# Resources:
+# - https://www.rpubs.com/spoonerf/countrymapggplot2
+# - Search: "ggplot2 map Kenya"
+# Note: Kenya is much larger than Denmark, so this may require more computing power!
 
-# F) If you have the time, you can go online and see if you can find a way to make a similar plot of Kenya.
-# (Although you might need more computing power — Kenya is much bigger than Denmark, after all!)
-# You can check this out: https://www.rpubs.com/spoonerf/countrymapggplot2 or find it yourself in Google!
+################################################################################
+#### CONGRATULATIONS! ####
+################################################################################
+
+# You've learned:
+# - Different plot types (scatter, bar, box, violin, dot)
+# - Customizing colors with palettes
+# - Adding labels and titles
+# - Faceting for small multiples
+# - Saving plots in different formats
+# - Basic geographic visualization
+
+# Keep practicing with your own data!
